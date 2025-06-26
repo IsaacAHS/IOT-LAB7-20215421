@@ -2,6 +2,7 @@ package com.example.telegesth;
 
 import android.app.Application;
 import android.util.Log;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -14,6 +15,9 @@ public class TeleGesthApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // FORZAR TEMA CLARO A NIVEL DE APLICACIÓN
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
         // Inicializar Firebase
         FirebaseApp.initializeApp(this);
 
@@ -25,5 +29,6 @@ public class TeleGesthApplication extends Application {
         firestore.setFirestoreSettings(settings);
 
         Log.d(TAG, "Firebase inicializado correctamente");
+        Log.d(TAG, "Tema claro forzado a nivel de aplicación");
     }
 }

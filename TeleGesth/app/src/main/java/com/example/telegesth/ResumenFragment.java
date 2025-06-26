@@ -186,9 +186,9 @@ public class ResumenFragment extends Fragment {
 
         double balance = totalIngresos - totalEgresos;
 
-        binding.tvTotalIngresos.setText(String.format("$%.2f", totalIngresos));
-        binding.tvTotalEgresos.setText(String.format("$%.2f", totalEgresos));
-        binding.tvBalance.setText(String.format("$%.2f", balance));
+        binding.tvTotalIngresos.setText(String.format("S/%.2f", totalIngresos));
+        binding.tvTotalEgresos.setText(String.format("S/%.2f", totalEgresos));
+        binding.tvBalance.setText(String.format("S/%.2f", balance));
 
         // Cambiar color del balance
         binding.tvBalance.setTextColor(balance >= 0 ?
