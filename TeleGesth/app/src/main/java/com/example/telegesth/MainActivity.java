@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.navigation_resumen, R.id.navigation_transacciones)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        // LÍNEA REMOVIDA: NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
         // FAB para agregar nueva transacción
