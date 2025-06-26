@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 
 import java.io.IOException;
@@ -26,14 +27,20 @@ public class CloudinaryService {
     private ExecutorService executor;
 
     public CloudinaryService() {
-        Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", CLOUD_NAME);
-        config.put("api_key", API_KEY);
-        config.put("api_secret", API_SECRET);
-        config.put("secure", "true"); // Usar HTTPS
+        try {
+            Map<String, String> config = new HashMap<>();
+            config.put("cloud_name", CLOUD_NAME);
+            config.put("api_key", API_KEY);
+            config.put("api_secret", API_SECRET);
+            config.put("secure", "true"); // Usar HTTPS
 
-        cloudinary = new Cloudinary(config);
-        executor = Executors.newFixedThreadPool(3);
+            cloudinary = new Cloudinary(config);
+            executor = Executors.newFixedThreadPool(3);
+
+            Log.d(TAG, "CloudinaryService inicializado correctamente");
+        } catch (Exception e) {
+            Log.e(TAG, "Error al inicializar CloudinaryService", e);
+        }
     }
 
     public interface OnUploadCompleteListener {
@@ -42,49 +49,70 @@ public class CloudinaryService {
     }
 
     public void subirImagen(Context context, Uri imageUri, String tipoTransaccion, OnUploadCompleteListener listener) {
+        Log.d(TAG, "Iniciando subida de imagen...");
+
         executor.execute(() -> {
+            InputStream inputStream = null;
             try {
-                InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                inputStream = context.getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) {
+                    Log.e(TAG, "No se pudo abrir el InputStream de la imagen");
+                    runOnUiThread(context, () -> listener.onError("No se pudo acceder a la imagen"));
+                    return;
+                }
 
                 // Determinar carpeta según tipo de transacción
                 String folder = "telegesth_transactions/" +
                         (tipoTransaccion != null ? tipoTransaccion.toLowerCase() : "otros");
 
+                // ✅ CORRECCIÓN: Estructura correcta de parámetros para Cloudinary
                 Map<String, Object> uploadParams = ObjectUtils.asMap(
                         "folder", folder,
                         "resource_type", "image",
                         "quality", "auto:good",
                         "format", "jpg",
-                        "transformation", ObjectUtils.asMap(
-                                "width", 800,
-                                "height", 600,
-                                "crop", "limit"
-                        ),
+                        "width", 800,
+                        "height", 600,
+                        "crop", "limit",
                         "tags", "telegesth,transaction," + tipoTransaccion
                 );
+
+                Log.d(TAG, "Parámetros de subida: " + uploadParams.toString());
 
                 Map uploadResult = cloudinary.uploader().upload(inputStream, uploadParams);
                 String imageUrl = (String) uploadResult.get("secure_url");
                 String publicId = (String) uploadResult.get("public_id");
 
                 Log.d(TAG, "Imagen subida exitosamente: " + publicId);
+                Log.d(TAG, "URL de imagen: " + imageUrl);
 
                 // Llamar al listener en el hilo principal
-                if (context instanceof android.app.Activity) {
-                    ((android.app.Activity) context).runOnUiThread(() ->
-                            listener.onSuccess(imageUrl)
-                    );
-                }
+                runOnUiThread(context, () -> listener.onSuccess(imageUrl));
 
             } catch (IOException e) {
                 Log.e(TAG, "Error al subir imagen a Cloudinary", e);
-                if (context instanceof android.app.Activity) {
-                    ((android.app.Activity) context).runOnUiThread(() ->
-                            listener.onError("Error al subir imagen: " + e.getMessage())
-                    );
+                runOnUiThread(context, () -> listener.onError("Error al subir imagen: " + e.getMessage()));
+            } catch (Exception e) {
+                Log.e(TAG, "Error inesperado al subir imagen", e);
+                runOnUiThread(context, () -> listener.onError("Error inesperado: " + e.getMessage()));
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        Log.w(TAG, "Error al cerrar InputStream", e);
+                    }
                 }
             }
         });
+    }
+
+    private void runOnUiThread(Context context, Runnable runnable) {
+        if (context instanceof android.app.Activity) {
+            ((android.app.Activity) context).runOnUiThread(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     // Método sobrecargado para compatibilidad
@@ -149,15 +177,15 @@ public class CloudinaryService {
         try {
             String publicId = extraerPublicId(originalUrl);
             if (publicId != null) {
+                // Crear un objeto Transformation en lugar de usar Map
+                Transformation transformation = new Transformation()
+                        .width(width)
+                        .height(height)
+                        .crop("fill")
+                        .quality("auto");
+
                 return cloudinary.url()
-                        .transformation(
-                                ObjectUtils.asMap(
-                                        "width", width,
-                                        "height", height,
-                                        "crop", "fill",
-                                        "quality", "auto"
-                                )
-                        )
+                        .transformation(transformation)
                         .generate(publicId);
             }
         } catch (Exception e) {

@@ -15,12 +15,21 @@ public class ServicioAlmacenamiento {
     private FirebaseFirestore db;
 
     public ServicioAlmacenamiento() {
-        db = FirebaseFirestore.getInstance();
+        try {
+            db = FirebaseFirestore.getInstance();
+            Log.d(TAG, "ServicioAlmacenamiento inicializado correctamente");
+        } catch (Exception e) {
+            Log.e(TAG, "Error al inicializar ServicioAlmacenamiento", e);
+        }
     }
 
-    // ✅ MÉTODOS DE FIRESTORE QUE SE MANTIENEN
     public Task<DocumentReference> guardarTransaccion(Transaccion transaccion) {
-        return db.collection(COLLECTION_TRANSACCIONES).add(transaccion);
+        Log.d(TAG, "Intentando guardar transacción: " + transaccion.getTitulo());
+        return db.collection(COLLECTION_TRANSACCIONES).add(transaccion)
+                .addOnSuccessListener(documentReference ->
+                        Log.d(TAG, "Transacción guardada exitosamente con ID: " + documentReference.getId()))
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error al guardar transacción en Firestore", e));
     }
 
     public Task<Void> actualizarTransaccion(String id, Transaccion transaccion) {
@@ -45,12 +54,10 @@ public class ServicioAlmacenamiento {
                 .get();
     }
 
-    // ✅ MÉTODO NUEVO: Obtener transacción específica (útil para edición)
     public Task<com.google.firebase.firestore.DocumentSnapshot> obtenerTransaccion(String id) {
         return db.collection(COLLECTION_TRANSACCIONES).document(id).get();
     }
 
-    // ✅ MÉTODO NUEVO: Buscar transacciones por tipo
     public Task<QuerySnapshot> obtenerTransaccionesPorTipo(String tipo) {
         return db.collection(COLLECTION_TRANSACCIONES)
                 .whereEqualTo("tipo", tipo)
