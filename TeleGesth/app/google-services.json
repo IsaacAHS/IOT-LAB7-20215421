@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "229730174740",
+    "project_id": "telegesth-app-c893b",
+    "storage_bucket": "telegesth-app-c893b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229730174740:android:f924c2b07fae77194ce401",
+        "android_client_info": {
+          "package_name": "com.example.telegesth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbCpSk-npZeCFpmIiWe73rBHa-Ecp_WqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

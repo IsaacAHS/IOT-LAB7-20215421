@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">TeleGesth</string>
+    <string name="title_resumen">Resumen</string>
+    <string name="title_transacciones">Transacciones</string>
+    <string name="title_agregar">Agregar</string>
+
+    <string-array name="tipos_transaccion">
+        <item>Ingreso</item>
+        <item>Egreso</item>
+    </string-array>
 </resources>
