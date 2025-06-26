@@ -95,24 +95,16 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Comprobante (Obligatorio)"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
         <Button
             android:id="@+id/btn_seleccionar_imagen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="Seleccionar Imagen"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
+            android:backgroundTint="@color/purple_500" />
 
         <ImageView
-            android:id="@+id/iv_imagen_seleccionada"
+            android:id="@+id/imageView_foto"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginBottom="16dp"
@@ -121,7 +113,7 @@
             android:background="@drawable/image_border" />
 
         <ProgressBar
-            android:id="@+id/progress_bar"
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -132,24 +124,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="2">
+            android:layout_marginTop="16dp">
 
             <Button
                 android:id="@+id/btn_cancelar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="8dp"
                 android:text="Cancelar"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                android:backgroundTint="@android:color/darker_gray" />
 
             <Button
                 android:id="@+id/btn_guardar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Guardar" />
+                android:layout_marginStart="8dp"
+                android:text="Guardar"
+                android:backgroundTint="@color/purple_500" />
 
         </LinearLayout>
 

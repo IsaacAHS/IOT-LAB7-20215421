@@ -16,8 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.telegesth.databinding.ActivityAgregarTransaccionBinding;
-import com.example.telegesth.Transaccion;
-import com.example.telegesth.ServicioAlmacenamiento;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,7 +27,9 @@ public class AgregarTransaccionActivity extends AppCompatActivity {
 
     private ActivityAgregarTransaccionBinding binding;
     private ServicioAlmacenamiento servicioAlmacenamiento;
+    private CloudinaryService cloudinaryService;
     private Uri imagenSeleccionada;
+    private String urlImagenSubida;
     private Date fechaSeleccionada;
     private Calendar calendar;
     private SimpleDateFormat dateFormat;
@@ -58,6 +58,7 @@ public class AgregarTransaccionActivity extends AppCompatActivity {
 
     private void inicializarComponentes() {
         servicioAlmacenamiento = new ServicioAlmacenamiento();
+        cloudinaryService = new CloudinaryService();
         calendar = Calendar.getInstance();
         dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         fechaSeleccionada = new Date();
@@ -86,7 +87,6 @@ public class AgregarTransaccionActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent.hasExtra("transaccion_id")) {
             esEdicion = true;
-            // Aquí cargarías los datos de la transacción para editar
             setTitle("Editar Transacción");
         } else {
             setTitle("Nueva Transacción");
@@ -116,31 +116,72 @@ public class AgregarTransaccionActivity extends AppCompatActivity {
 
     private void mostrarImagenSeleccionada() {
         if (imagenSeleccionada != null) {
-            binding.ivImagenSeleccionada.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(imagenSeleccionada)
-                    .into(binding.ivImagenSeleccionada);
+                    .centerCrop()
+                    .into(binding.imageViewFoto);
+            binding.imageViewFoto.setVisibility(View.VISIBLE);
         }
     }
 
     private void guardarTransaccion() {
-        if (!validarCampos()) return;
+        if (!validarCampos()) {
+            return;
+        }
 
-        binding.progressBar.setVisibility(View.VISIBLE);
         binding.btnGuardar.setEnabled(false);
+        binding.progressBar.setVisibility(View.VISIBLE);
 
+        if (imagenSeleccionada != null) {
+            // Primero subir imagen a Cloudinary
+            String tipoTransaccion = binding.spinnerTipo.getSelectedItem().toString();
+            cloudinaryService.subirImagen(this, imagenSeleccionada, tipoTransaccion, new CloudinaryService.OnUploadCompleteListener() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    urlImagenSubida = imageUrl;
+                    guardarTransaccionEnFirestore();
+                }
+
+                @Override
+                public void onError(String error) {
+                    binding.progressBar.setVisibility(View.GONE);
+                    binding.btnGuardar.setEnabled(true);
+                    Toast.makeText(AgregarTransaccionActivity.this,
+                            "Error al subir imagen: " + error, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Error Cloudinary: " + error);
+                }
+            });
+        } else {
+            // Sin imagen, guardar directamente
+            guardarTransaccionEnFirestore();
+        }
+    }
+
+    private void guardarTransaccionEnFirestore() {
         String titulo = binding.etTitulo.getText().toString().trim();
-        double monto = Double.parseDouble(binding.etMonto.getText().toString().trim());
+        String montoTexto = binding.etMonto.getText().toString().trim();
         String descripcion = binding.etDescripcion.getText().toString().trim();
         String tipo = binding.spinnerTipo.getSelectedItem().toString();
 
-        Transaccion transaccion = new Transaccion(titulo, monto, descripcion, fechaSeleccionada, tipo);
+        double monto = Double.parseDouble(montoTexto);
 
-        if (imagenSeleccionada != null) {
-            subirImagenYGuardar(transaccion);
-        } else {
-            guardarEnFirestore(transaccion);
-        }
+        Transaccion transaccion = new Transaccion(titulo, monto, descripcion, tipo, fechaSeleccionada, urlImagenSubida);
+
+        servicioAlmacenamiento.guardarTransaccion(transaccion)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "Transacción guardada con ID: " + documentReference.getId());
+                    Toast.makeText(this, "Transacción guardada exitosamente", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error al guardar transacción", e);
+                    Toast.makeText(this, "Error al guardar transacción", Toast.LENGTH_SHORT).show();
+                })
+                .addOnCompleteListener(task -> {
+                    binding.progressBar.setVisibility(View.GONE);
+                    binding.btnGuardar.setEnabled(true);
+                });
     }
 
     private boolean validarCampos() {
@@ -148,61 +189,25 @@ public class AgregarTransaccionActivity extends AppCompatActivity {
             binding.etTitulo.setError("Campo requerido");
             return false;
         }
+
         if (binding.etMonto.getText().toString().trim().isEmpty()) {
             binding.etMonto.setError("Campo requerido");
             return false;
         }
-        if (imagenSeleccionada == null) {
-            Toast.makeText(this, "Debe seleccionar una imagen como comprobante", Toast.LENGTH_LONG).show();
+
+        try {
+            Double.parseDouble(binding.etMonto.getText().toString().trim());
+        } catch (NumberFormatException e) {
+            binding.etMonto.setError("Monto inválido");
             return false;
         }
+
         return true;
-    }
-
-    private void subirImagenYGuardar(Transaccion transaccion) {
-        String nombreArchivo = servicioAlmacenamiento.generarNombreArchivo();
-
-        servicioAlmacenamiento.subirImagen(imagenSeleccionada, nombreArchivo)
-                .addOnSuccessListener(taskSnapshot -> {
-                    transaccion.setImagenNombre(nombreArchivo);
-                    servicioAlmacenamiento.obtenerUrlImagen(nombreArchivo)
-                            .addOnSuccessListener(uri -> {
-                                transaccion.setImagenUrl(uri.toString());
-                                guardarEnFirestore(transaccion);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "Error al obtener URL de imagen", e);
-                                mostrarError("Error al procesar imagen");
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error al subir imagen", e);
-                    mostrarError("Error al subir imagen");
-                });
-    }
-
-    private void guardarEnFirestore(Transaccion transaccion) {
-        servicioAlmacenamiento.guardarTransaccion(transaccion)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d(TAG, "Transacción guardada con ID: " + documentReference.getId());
-                    Toast.makeText(this, "Transacción guardada exitosamente", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error al guardar transacción", e);
-                    mostrarError("Error al guardar transacción");
-                });
-    }
-
-    private void mostrarError(String mensaje) {
-        binding.progressBar.setVisibility(View.GONE);
-        binding.btnGuardar.setEnabled(true);
-        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        onBackPressed();
         return true;
     }
 }

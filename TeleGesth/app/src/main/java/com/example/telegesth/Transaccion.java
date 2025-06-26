@@ -7,21 +7,22 @@ public class Transaccion {
     private String titulo;
     private double monto;
     private String descripcion;
+    private String tipo;
     private Date fecha;
-    private String tipo; // "ingreso" o "egreso"
-    private String imagenUrl;
-    private String imagenNombre;
+    private String foto; // Nueva campo para URL de Cloudinary
+    private Date fechaCreacion;
 
-    public Transaccion() {
-        // Constructor vacío requerido para Firestore
-    }
+    // Constructor vacío requerido por Firestore
+    public Transaccion() {}
 
-    public Transaccion(String titulo, double monto, String descripcion, Date fecha, String tipo) {
+    public Transaccion(String titulo, double monto, String descripcion, String tipo, Date fecha, String foto) {
         this.titulo = titulo;
         this.monto = monto;
         this.descripcion = descripcion;
-        this.fecha = fecha;
         this.tipo = tipo;
+        this.fecha = fecha;
+        this.foto = foto;
+        this.fechaCreacion = new Date();
     }
 
     // Getters y Setters
@@ -37,15 +38,20 @@ public class Transaccion {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public Date getFecha() { return fecha; }
-    public void setFecha(Date fecha) { this.fecha = fecha; }
-
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
 
-    public String getImagenUrl() { return imagenUrl; }
-    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+    public Date getFecha() { return fecha; }
+    public void setFecha(Date fecha) { this.fecha = fecha; }
 
-    public String getImagenNombre() { return imagenNombre; }
-    public void setImagenNombre(String imagenNombre) { this.imagenNombre = imagenNombre; }
+    public String getFoto() { return foto; }
+    public void setFoto(String foto) { this.foto = foto; }
+
+    public Date getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    // Método de compatibilidad para código existente
+    public String getImagenNombre() {
+        return foto; // Retorna la URL en lugar del nombre del archivo
+    }
 }

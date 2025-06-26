@@ -1,111 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:rippleColor="@color/purple_200">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header con título y botones -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tv_titulo"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Título"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:text="Compra supermercado" />
 
                 <TextView
-                    android:id="@+id/tv_tipo"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tv_monto"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/chip_background"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="Ingreso"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    tools:text="S/ 150.00" />
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_monto"
+            <!-- Botones de acción -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="$0.00"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btn_compartir"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_share"
+                    android:contentDescription="Compartir"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_eliminar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_delete"
+                    android:contentDescription="Eliminar" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Información adicional -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
 
             <TextView
-                android:id="@+id/tv_descripcion"
-                android:layout_width="match_parent"
+                android:id="@+id/tv_tipo"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Descripción"
-                android:textSize="14sp" />
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textColor="@color/teal_200"
+                tools:text="Egreso" />
 
             <TextView
                 android:id="@+id/tv_fecha"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="01/01/2024"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
-
-            <ImageView
-                android:id="@+id/iv_comprobante"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_marginTop="8dp"
-                android:scaleType="centerCrop"
-                android:background="@drawable/image_border"
-                android:visibility="gone" />
+                android:textSize="14sp"
+                android:textColor="@color/teal_700"
+                tools:text="26/06/2025" />
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <!-- Descripción -->
+        <TextView
+            android:id="@+id/tv_descripcion"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:orientation="vertical">
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            android:textColor="@color/teal_200"
+            android:visibility="gone"
+            tools:text="Compras del mes en el supermercado"
+            tools:visibility="visible" />
 
-            <ImageButton
-                android:id="@+id/btn_descargar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginBottom="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_download"
-                android:contentDescription="Descargar imagen" />
+        <!-- Contenedor de imagen -->
+        <LinearLayout
+            android:id="@+id/contenedor_imagen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-            <ImageButton
-                android:id="@+id/btn_eliminar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_delete"
-                android:contentDescription="Eliminar transacción" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📷 Comprobante"
+                android:textSize="12sp"
+                android:textColor="@color/purple_200"
+                android:layout_marginBottom="8dp" />
+
+            <ImageView
+                android:id="@+id/iv_foto"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/image_border"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                tools:src="@drawable/ic_placeholder" />
 
         </LinearLayout>
 
